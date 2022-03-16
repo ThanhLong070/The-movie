@@ -30,7 +30,7 @@ class MovieList extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 25.0),
+        const SizedBox(width: 21.0),
       ],
     );
   }
