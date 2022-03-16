@@ -4,8 +4,8 @@ import 'package:simple_gradient_text/simple_gradient_text.dart';
 import 'radiant_gradient_mask.dart';
 
 class GradientButton extends StatelessWidget {
-  const GradientButton({required this.titleButton});
-  final String titleButton;
+  const GradientButton({required this.textButton});
+  final String textButton;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class GradientButton extends StatelessWidget {
       child: Row(
         children: <Widget>[
           GradientText(
-            titleButton,
+            textButton,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
