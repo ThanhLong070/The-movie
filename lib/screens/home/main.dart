@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:footer/footer.dart';
 import 'package:footer/footer_view.dart';
+import 'package:the_movie/data_sources/api_services.dart';
 import 'package:the_movie/models/movie.dart';
 import 'package:the_movie/shared/gradient_button.dart';
 
@@ -14,80 +18,29 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
-    List<Movie> _popularMovies = [
-      Movie(
-        id: '1',
-        title: 'Bóng Ma Anh Quốc',
-        posterPath: '/vUUqzWa2LnHIVqkaKVlVGkVcZIW.jpg',
-        date: 'Sep 12, 2013',
-        percent: '86',
-        posterContentPath: '/hI5h8o3bbZlZwnySEs6rL7pXH32.jpg',
-      ),
-      Movie(
-        id: '2',
-        title: 'Xác Sống',
-        posterPath: '/rqeYMLryjcawh2JeRpCVUDXYM5b.jpg',
-        date: 'Oct 31, 2010',
-        percent: '81',
-        posterContentPath: '/wvdWb5kTQipdMDqCclC6Y3zr4j3.jpg',
-      ),
-      Movie(
-        id: '3',
-        title: 'The Simpsons',
-        posterPath: '/k5UALlcA0EnviaCUn2wMjOWYiOO.jpg',
-        date: 'Dec 17, 1989',
-        percent: '79',
-        posterContentPath: '/hpU2cHC9tk90hswCFEpf5AtbqoL.jpg',
-      ),
-    ];
-
-    List<Movie> _trendingMovies = [
-      Movie(
-        id: '4',
-        title: 'Người Nhện: Không Còn Nhà',
-        posterPath: '/y4SQ2dJ1y2LBUnxTH7hCe8sr29c.jpg',
-        date: 'Dec 15, 2021',
-        percent: '83',
-        posterContentPath: '/iQFcwSGbZXMkeyKrxbPnwnRo5fl.jpg',
-      ),
-      Movie(
-        id: '5',
-        title: 'Gấu Đỏ Biến Hình',
-        posterPath: '/qsdjk9oAKSQMWs0Vt5Pyfh6O4GZ.jpg',
-        date: 'Mar 10, 2022',
-        percent: '74',
-        posterContentPath: '/fOy2Jurz9k6RnJnMUMRDAgBwru2.jpg',
-      ),
-      Movie(
-        id: '6',
-        title: 'Dự Án Adam',
-        posterPath: '/wFjboE0aFZNbVOF05fzrka9Fqyx.jpg',
-        date: 'Mar 11, 2022',
-        percent: '71',
-        posterContentPath: '/ewUqXnwiRLhgmGhuksOdLgh49Ch.jpg',
-      ),
-    ];
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: NavBar(),
       body: FooterView(
         children: <Widget>[
-          Column(
-            children: <Widget>[
-              const BannerHome(),
-              TitleMoreButton(title: "What's Popular", textButton: 'On TV'),
-              Movies(movies: _popularMovies),
-              const TrailerHome(),
-              TitleMoreButton(title: 'Trending', textButton: 'Today'),
-              Stack(children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 150.0),
-                  child: Image.asset('assets/trending_bg.png'),
-                ),
-                Movies(movies: _trendingMovies)
-              ]),
-            ],
+          SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                const BannerHome(),
+                TitleMoreButton(
+                    title: "What's Popular", textButton: 'In Theaters'),
+                Movies(isPopular: true, isTrending: false),
+                const TrailerHome(),
+                TitleMoreButton(title: 'Trending', textButton: 'This Week'),
+                Stack(children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 150.0),
+                    child: Image.asset('assets/trending_bg.png'),
+                  ),
+                  Movies(isPopular: false, isTrending: true)
+                ]),
+              ],
+            ),
           ),
         ],
         footer: Footer(
@@ -113,17 +66,48 @@ class Home extends StatelessWidget {
 }
 
 class Movies extends StatelessWidget {
-  Movies({required this.movies});
-  List<Movie> movies;
+  Movies({required this.isPopular, required this.isTrending});
+  bool isPopular;
+  bool isTrending;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 20.0, top: 15.0, bottom: 30.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: movies.map((movie) => MovieList(movie: movie)).toList(),
+    Size size = MediaQuery.of(context).size;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(
+        width: size.width,
+        height: size.height * 0.48,
+        child: FutureBuilder<List<Movie>>(
+          future: (isPopular && !isTrending)
+              ? ApiServices().fetchMoviesData('POPULAR')
+              : ApiServices().fetchMoviesData('TRENDING'),
+          builder: (context, snapshot) {
+            if ((!snapshot.hasData) || (snapshot.hasError)) {
+              return Center(
+                child: Platform.isAndroid
+                    ? const CircularProgressIndicator()
+                    : const CupertinoActivityIndicator(
+                        radius: 20.0,
+                        color: Color.fromARGB(255, 1, 180, 228),
+                      ),
+              );
+            }
+            List<Movie> movieList = snapshot.data!;
+            return ListView.builder(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              itemCount: movieList.length,
+              itemBuilder: (BuildContext context, int index) {
+                return MovieList(
+                  movie: movieList[index],
+                  size: size,
+                  isPopular: isPopular,
+                  isTrending: isTrending,
+                );
+              },
+            );
+          },
         ),
       ),
     );

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:the_movie/blocs/auth/auth_bloc.dart';
+import 'package:the_movie/blocs/auth/auth_event.dart';
 import 'package:the_movie/shared/constants.dart';
 
 class FormSignIn extends StatefulWidget {
@@ -9,10 +12,38 @@ class FormSignIn extends StatefulWidget {
 }
 
 class _FormSignInState extends State<FormSignIn> {
-  // text field state
-  String username = '';
-  String password = '';
-  String error = '';
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool isUsernameBlank = false;
+  bool isPasswordBlank = false;
+
+  AuthBloc? authBloc;
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    authBloc = BlocProvider.of<AuthBloc>(context);
+    super.initState();
+  }
+
+  void onPressLoginButton() async {
+    authBloc!.add(LoginButtonPressed(
+        username: usernameController.text, password: passwordController.text));
+    setState(() {
+      usernameController.text.isEmpty
+          ? isUsernameBlank = true
+          : isUsernameBlank = false;
+      passwordController.text.isEmpty
+          ? isPasswordBlank = true
+          : isPasswordBlank = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +57,18 @@ class _FormSignInState extends State<FormSignIn> {
             style: TextStyle(
               fontSize: 16.0,
               fontWeight: FontWeight.w400,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 5.0),
           TextFormField(
-            decoration: textInputDecoration,
+            controller: usernameController,
+            decoration: textInputDecoration.copyWith(
+              errorText: isUsernameBlank ? 'Username Can\'t Be Empty' : null,
+              errorStyle: const TextStyle(fontSize: 16.0),
+            ),
             cursorColor: Colors.grey[600],
             cursorWidth: 1.5,
-            validator: (val) => val!.isEmpty ? 'Enter an username' : null,
-            onChanged: (val) => setState(() => username = val),
           ),
           const SizedBox(height: 20.0),
           const Text(
@@ -42,17 +76,19 @@ class _FormSignInState extends State<FormSignIn> {
             style: TextStyle(
               fontSize: 16.0,
               fontWeight: FontWeight.w400,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 5.0),
           TextFormField(
-            decoration: textInputDecoration,
+            controller: passwordController,
+            decoration: textInputDecoration.copyWith(
+              errorText: isPasswordBlank ? 'Password Can\'t Be Empty' : null,
+              errorStyle: const TextStyle(fontSize: 16.0),
+            ),
             cursorColor: Colors.grey[600],
             cursorWidth: 1.5,
             obscureText: true,
-            validator: (val) =>
-                val!.length < 6 ? 'Enter a password 6+ chars long' : null,
-            onChanged: (val) => setState(() => password = val),
           ),
           const SizedBox(height: 20),
           Row(
@@ -79,7 +115,7 @@ class _FormSignInState extends State<FormSignIn> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: onPressLoginButton,
                       child: const Text('Đăng nhập'),
                     ),
                   ],

@@ -13,7 +13,7 @@ class ContentSignIn extends StatelessWidget {
             style: TextStyle(
               fontSize: 16.0,
               fontWeight: FontWeight.w400,
-              color: Colors.black,
+              color: Colors.white,
             ),
             children: <TextSpan>[
               TextSpan(
@@ -38,7 +38,7 @@ class ContentSignIn extends StatelessWidget {
             style: TextStyle(
               fontSize: 16.0,
               fontWeight: FontWeight.w400,
-              color: Colors.black,
+              color: Colors.white,
             ),
             children: <TextSpan>[
               TextSpan(

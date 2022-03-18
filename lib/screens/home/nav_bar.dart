@@ -1,33 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:the_movie/screens/wapper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NavBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
-    void _showSignInPanel() {
-      showModalBottomSheet(
-        context: context,
-        builder: (context) {
-          return Container(
-            padding:
-                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 60.0),
-            child: Center(
-              child: Column(
-                // mainAxisAlignment: MainAxisAlignment.center,
-                // mainAxisSize: MainAxisSize.min,
-                children: const <Widget>[
-                  ElevatedButton(
-                    child: Text('Đăng xuất'),
-                    onPressed: null,
-                  )
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
-
     return AppBar(
       backgroundColor: const Color.fromARGB(255, 2, 40, 69),
       elevation: 0,
@@ -50,12 +26,16 @@ class NavBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: true,
       actions: <Widget>[
         IconButton(
-          icon: const Image(
-            image: AssetImage('assets/person.png'),
+          icon: const Icon(
+            Icons.logout,
             color: Colors.white,
-            height: 24,
+            size: 24,
           ),
-          onPressed: _showSignInPanel,
+          onPressed: () async {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.clear();
+            Navigator.popAndPushNamed(context, '/');
+          },
         ),
         IconButton(
           icon: const Icon(

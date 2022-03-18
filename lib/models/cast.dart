@@ -1,44 +1,65 @@
 import 'dart:convert';
 
 class Cast {
-  Cast({
-    required this.id,
-    required this.avatarPath,
-    required this.nameActor,
-    required this.inCharacter,
-    required this.episodes,
-  });
+  Cast(
+      {this.adult,
+      this.gender,
+      this.id,
+      this.knownForDepartment,
+      this.name,
+      this.originalName,
+      this.popularity,
+      this.profilePath,
+      this.castId,
+      this.character,
+      this.creditId,
+      this.order});
 
-  factory Cast.fromJson(String source) => Cast.fromMap(json.decode(source));
-
-  factory Cast.fromMap(Map<String, dynamic> map) {
-    return Cast(
-      id: map['id'] ?? '0',
-      nameActor: map['nameActor'] ?? '',
-      avatarPath: map['poster_path'] ?? '',
-      inCharacter: map['inCharacter'] ?? '',
-      episodes: map['episodes'] ?? '0',
-    );
+  Cast.fromJson(Map<String, dynamic> json) {
+    adult = json['adult'];
+    gender = json['gender'];
+    id = json['id'];
+    knownForDepartment = json['known_for_department'];
+    name = json['name'];
+    originalName = json['original_name'];
+    popularity = json['popularity'];
+    profilePath = json['profile_path'];
+    castId = json['cast_id'];
+    character = json['character'];
+    creditId = json['credit_id'];
+    order = json['order'];
   }
 
-  String inCharacter;
-  String episodes;
-  String avatarPath;
-  String nameActor;
-  String id;
+  bool? adult;
+  int? castId;
+  String? character;
+  String? creditId;
+  int? gender;
+  int? id;
+  String? knownForDepartment;
+  String? name;
+  int? order;
+  String? originalName;
+  double? popularity;
+  String? profilePath;
 
-  String get avatarUrl =>
-      'https://www.themoviedb.org/t/p/w240_and_h266_face$avatarPath';
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'nameActor': nameActor,
-      'poster_path': avatarPath,
-      'inCharacter': inCharacter,
-      'episodes': episodes,
-    };
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['adult'] = adult;
+    data['gender'] = gender;
+    data['id'] = id;
+    data['known_for_department'] = knownForDepartment;
+    data['name'] = name;
+    data['original_name'] = originalName;
+    data['popularity'] = popularity;
+    data['profile_path'] = profilePath;
+    data['cast_id'] = castId;
+    data['character'] = character;
+    data['credit_id'] = creditId;
+    data['order'] = order;
+    return data;
   }
 
-  String toJson() => json.encode(toMap());
+  String get profileUrl =>
+      'https://www.themoviedb.org/t/p/w240_and_h266_face$profilePath';
 }

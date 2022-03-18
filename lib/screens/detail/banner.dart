@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:the_movie/models/movie.dart';
 
 class BannerDetail extends StatelessWidget {
-  BannerDetail({required this.movie, required this.size});
-  Movie movie;
+  BannerDetail({this.movie, required this.size});
+  Movie? movie;
   Size size;
 
   @override
@@ -13,7 +13,7 @@ class BannerDetail extends StatelessWidget {
         Stack(
           children: <Widget>[
             Image.network(
-              movie.posterContentDetailUrl,
+              movie!.backdropUrl,
               fit: BoxFit.cover,
               alignment: Alignment.topCenter,
               height: size.height / 3.5,
@@ -23,8 +23,8 @@ class BannerDetail extends StatelessWidget {
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: <Color>[
-                    Color.fromRGBO(10, 32, 74, 1),
-                    Color.fromRGBO(10, 32, 74, 0),
+                    Color.fromRGBO(32, 32, 32, 1),
+                    Color.fromRGBO(32, 32, 32, 0),
                   ],
                 ),
               ),
@@ -34,7 +34,7 @@ class BannerDetail extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(25),
           child: Image.network(
-            movie.posterDetailUrl,
+            movie!.posterDetailUrl,
             fit: BoxFit.cover,
             alignment: Alignment.topCenter,
             height: size.height / 5.5,

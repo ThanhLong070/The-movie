@@ -4,41 +4,58 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:the_movie/screens/detail/main.dart';
 
 class MovieList extends StatelessWidget {
+  bool isPopular;
+  bool isTrending;
   Movie movie;
-  MovieList({required this.movie});
+  Size size;
+  MovieList({
+    required this.movie,
+    required this.size,
+    required this.isPopular,
+    required this.isTrending,
+  });
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-
-    return Row(
-      children: <Widget>[
-        SizedBox(
-          width: size.width * 0.390,
-          height: size.height * 0.399,
-          child: Column(
-            children: <Widget>[
-              Stack(
-                children: <Widget>[
-                  Poster(movie: movie),
-                  ThreeDot(),
-                  UserScore(movie: movie),
-                ],
-              ),
-              const SizedBox(height: 10.0),
-              Description(movie: movie),
-            ],
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(left: 20.0, top: 15.0, bottom: 30.0),
+      child: SizedBox(
+        width: size.width * 0.390,
+        child: Column(
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Poster(
+                  movie: movie,
+                  isPopular: isPopular,
+                  isTrending: isTrending,
+                ),
+                ThreeDot(),
+                UserScore(movie: movie),
+              ],
+            ),
+            const SizedBox(height: 10.0),
+            Description(
+              movie: movie,
+              isPopular: isPopular,
+              isTrending: isTrending,
+            ),
+          ],
         ),
-        const SizedBox(width: 21.0),
-      ],
+      ),
     );
   }
 }
 
 class Poster extends StatelessWidget {
-  Poster({required this.movie});
+  bool isPopular;
+  bool isTrending;
   Movie movie;
+  Poster({
+    required this.movie,
+    required this.isPopular,
+    required this.isTrending,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -47,15 +64,17 @@ class Poster extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => Detail(movie: movie),
+            builder: (context) => Detail(
+              movie: movie,
+              isPopular: isPopular,
+              isTrending: isTrending,
+            ),
           ),
         );
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8.0),
-        child: Image.network(
-          movie.posterHomeUrl,
-        ),
+        child: Image.network(movie.posterHomeUrl),
       ),
     );
   }
@@ -99,7 +118,7 @@ class UserScore extends StatelessWidget {
               child: CircularPercentIndicator(
                 radius: 20.0,
                 lineWidth: 2.5,
-                percent: double.parse('0.${movie.percent}'),
+                percent: movie.percent,
                 progressColor: Colors.greenAccent[700],
                 backgroundColor: const Color.fromRGBO(0, 200, 83, 0.3),
                 fillColor: Colors.black87,
@@ -107,7 +126,7 @@ class UserScore extends StatelessWidget {
                 center: Stack(
                   children: <Widget>[
                     Text(
-                      movie.percent,
+                      movie.percentText,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16.0,
@@ -137,8 +156,15 @@ class UserScore extends StatelessWidget {
 }
 
 class Description extends StatelessWidget {
-  Description({required this.movie});
+  Description({
+    required this.movie,
+    required this.isPopular,
+    required this.isTrending,
+  });
+
   Movie movie;
+  bool isPopular;
+  bool isTrending;
 
   @override
   Widget build(BuildContext context) {
@@ -151,12 +177,20 @@ class Description extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Detail(movie: movie),
+                  builder: (context) => Detail(
+                    movie: movie,
+                    isPopular: isPopular,
+                    isTrending: isTrending,
+                  ),
                 ),
               );
             },
             child: Text(
-              movie.title,
+              (isPopular && !isTrending)
+                  ? '${movie.title}'
+                  : movie.mediaType == 'movie' && movie.mediaType != 'tv'
+                      ? '${movie.title}'
+                      : '${movie.name}',
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 16.0,
@@ -167,7 +201,11 @@ class Description extends StatelessWidget {
         SizedBox(
           width: 130.0,
           child: Text(
-            movie.date,
+            (isPopular && !isTrending)
+                ? '${movie.releaseDate}'
+                : movie.mediaType == 'movie' && movie.mediaType != 'tv'
+                    ? '${movie.releaseDate}'
+                    : '${movie.firstAirDate}',
             style: const TextStyle(
               fontWeight: FontWeight.w400,
               fontSize: 16.0,

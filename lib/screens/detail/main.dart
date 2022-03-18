@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:the_movie/data_sources/api_services.dart';
 import 'package:the_movie/models/cast.dart';
 import 'package:the_movie/models/movie.dart';
 import 'package:the_movie/screens/detail/banner.dart';
@@ -7,35 +11,17 @@ import 'package:the_movie/screens/detail/cast_list.dart';
 
 class Detail extends StatelessWidget {
   Movie movie;
-  Detail({required this.movie});
+  bool isPopular;
+  bool isTrending;
+  Detail({
+    required this.movie,
+    required this.isPopular,
+    required this.isTrending,
+  });
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-
-    List<Cast> _cast = [
-      Cast(
-        id: '1',
-        avatarPath: '/i8dOTC0w6V274ev5iAAvo4Ahhpr.jpg',
-        nameActor: 'Cillian Murphy',
-        inCharacter: 'Tommy Shelby',
-        episodes: '34',
-      ),
-      Cast(
-        id: '2',
-        avatarPath: '/nds5rTBZvJ4rEsP4N6OaoEgQDkW.jpg',
-        nameActor: 'Paul Anderson',
-        inCharacter: 'Arthur Shelby',
-        episodes: '34',
-      ),
-      Cast(
-        id: '6',
-        avatarPath: '/9HxJ6pG1Q0BBbIV1UXk5iU9zDM9.jpg',
-        nameActor: 'Sophie Rundle',
-        inCharacter: 'Ada Shelby',
-        episodes: '34',
-      ),
-    ];
 
     return Scaffold(
         appBar: AppBar(
@@ -45,7 +31,7 @@ class Detail extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SingleChildScrollView(
           child: Container(
-            color: const Color.fromARGB(255, 10, 32, 74),
+            color: const Color.fromARGB(255, 32, 32, 32),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -55,13 +41,17 @@ class Detail extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Title(movie: movie),
+                    Title(
+                      movie: movie,
+                      isPopular: isPopular,
+                      isTrending: isTrending,
+                    ),
                     SizedBox(height: size.height / 40),
                     UserScore(movie: movie),
                     SizedBox(height: size.height / 40),
                     Genre(movie: movie, size: size),
                     Overview(movie: movie, size: size),
-                    SeriesCast(cast: _cast),
+                    SeriesCast(id: movie.id!, size: size),
                   ],
                 ),
                 // const SizedBox(height: 500),
@@ -73,31 +63,49 @@ class Detail extends StatelessWidget {
 }
 
 class Title extends StatelessWidget {
-  Title({required this.movie});
+  Title({
+    required this.movie,
+    required this.isPopular,
+    required this.isTrending,
+  });
   Movie movie;
+  bool isPopular;
+  bool isTrending;
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        children: <TextSpan>[
-          TextSpan(
-            text: movie.title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 23,
-              color: Colors.white,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          children: <TextSpan>[
+            TextSpan(
+              text: (isPopular && !isTrending)
+                  ? '${movie.title}'
+                  : movie.mediaType == 'movie' && movie.mediaType != 'tv'
+                      ? '${movie.title}'
+                      : '${movie.name}',
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 23,
+                color: Colors.white,
+              ),
             ),
-          ),
-          const TextSpan(
-            text: ' (2013)',
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 18,
-              color: Colors.white,
+            TextSpan(
+              text: (isPopular && !isTrending)
+                  ? ' (${movie.releaseDate!.substring(0, 4)})'
+                  : movie.mediaType == 'movie' && movie.mediaType != 'tv'
+                      ? ' (${movie.releaseDate!.substring(0, 4)})'
+                      : ' (${movie.firstAirDate!.substring(0, 4)})',
+              style: const TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 18,
+                color: Colors.white,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -124,7 +132,7 @@ class UserScore extends StatelessWidget {
               child: CircularPercentIndicator(
                 radius: 25.0,
                 lineWidth: 4.0,
-                percent: double.parse('0.${movie.percent}'),
+                percent: movie.percent,
                 progressColor: Colors.greenAccent[700],
                 backgroundColor: const Color.fromRGBO(0, 200, 83, 0.3),
                 fillColor: Colors.black87,
@@ -132,7 +140,7 @@ class UserScore extends StatelessWidget {
                 center: Stack(
                   children: <Widget>[
                     Text(
-                      movie.percent,
+                      movie.percentText,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18.0,
@@ -281,9 +289,9 @@ class Overview extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Một băng đảng khét tiếng xuất hiện ở Birmingham, Anh Quốc năm 1919. Cầm đầu băng là Tommy Shelby, tên trùm tội phạm khét tiếng muốn nổi lên bằng mọi giá.',
-            style: TextStyle(
+          Text(
+            '${movie.overview}',
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w400,
               fontSize: 16.0,
@@ -311,19 +319,16 @@ class Overview extends StatelessWidget {
 }
 
 class SeriesCast extends StatelessWidget {
-  SeriesCast({required this.cast});
-  List<Cast> cast;
+  SeriesCast({required this.id, required this.size});
+  int id;
+  Size size;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
       alignment: Alignment.centerLeft,
-      padding: const EdgeInsets.only(
-        top: 25.0,
-        bottom: 25.0,
-        left: 25.0,
-      ),
+      padding: const EdgeInsets.only(top: 25.0, bottom: 25.0, left: 25.0),
       child: Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,7 +344,36 @@ class SeriesCast extends StatelessWidget {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: cast.map((cast) => CastList(cast: cast)).toList(),
+                children: <Widget>[
+                  SizedBox(
+                    width: size.width,
+                    height: size.height * 0.32,
+                    child: FutureBuilder<List<Cast>>(
+                      future: ApiServices().fetchCast(id.toString()),
+                      builder: (context, snapshot) {
+                        if ((!snapshot.hasData) || (snapshot.hasError)) {
+                          return Center(
+                            child: Platform.isAndroid
+                                ? const CircularProgressIndicator()
+                                : const CupertinoActivityIndicator(
+                                    radius: 20.0,
+                                    color: Color.fromARGB(255, 1, 180, 228),
+                                  ),
+                          );
+                        }
+                        List<Cast> castList = snapshot.data!;
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          shrinkWrap: true,
+                          itemCount: castList.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return CastList(cast: castList[index], size: size);
+                          },
+                        );
+                      },
+                    ),
+                  )
+                ],
               ),
             ),
           ],
